@@ -1,0 +1,65 @@
+import React, { useState, useEffect } from "react";
+import WeatherCard from "./weatherCard";
+
+const WeatherEngine = ({ location }) => {
+  //initializingfor the state variables
+
+  const [query, setQuery] = useState(" ");
+   const [loading, setLoading] = useState(false);
+  const [weather, setWeather] = useState({
+    temp: null,
+    city: null,
+    condition: null,
+    country: null,
+  });
+
+  //definign the data fetching function
+    const getWeather = async (q) => {
+        setLoading(true);
+        const apiRes = await fetch(
+            `https://api.openweathermap.org/data/2.5/weather?q=${q}&units=metric&appid=687e7d211c2d5724459ac6860527abbb`
+        );
+        const resJSON = await apiRes.json();
+        setWeather({
+            temp: resJSON.main.temp,
+            city: resJSON.name,
+            condition: resJSON.weather[0].main,
+            country: resJSON.sys.country,
+        });
+    setLoading(false);
+  };
+
+  //function to handle search quries from the user side
+  const handleSearch = (e) => {
+    e.preventDefault();
+    getWeather(query);
+  };
+
+  //this hook will make the code run only once the component is mounted and never again
+  useEffect(() => {
+    getWeather(location);
+  }, [location]);
+
+  return (
+    <div>
+      {!loading ? (
+        <div>
+          <WeatherCard
+            temp={weather.temp}
+            condition={weather.condition}
+            city={weather.city}
+            country={weather.country}
+          />
+          <form>
+            <input value={query} onChange={(e) => setQuery(e.target.value)} />
+            <button onClick={(e) => handleSearch(e)}>Search</button>
+          </form>
+        </div>
+      ) : (
+        <div>loading</div>
+      )}
+ </div>
+  );
+};
+
+export default WeatherEngine;
